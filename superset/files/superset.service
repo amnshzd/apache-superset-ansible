@@ -1,0 +1,13 @@
+[Unit]
+Description=Apache Superset
+After=network-online.target
+Wants=network-online.target systemd-networkd-wait-online.service
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+Environment=PYTHONPATH=$PYTHONPATH:/opt/python/superset/
+ExecStart='/bin/superset.sh'
+
+[Install]
+WantedBy=multi-user.target

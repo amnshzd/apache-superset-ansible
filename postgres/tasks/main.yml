@@ -1,0 +1,44 @@
+---
+# tasks file for postgres
+
+  - name: update apt cache
+    apt:
+      update_cache: yes
+
+  - name: install needed package
+    apt:
+      name: "{{ item }}"
+      state: present
+    loop:
+      - "{{ packages_to_install }}"
+
+
+  - name: Add an Apt signing key, uses whichever key is at the URL
+    apt_key:
+      url: https://www.postgresql.org/media/keys/ACCC4CF8.asc 
+      state: present
+
+  - name: Add specified repository into sources list
+    apt_repository:
+      repo: deb http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main
+      state: present
+
+  - name: Install Postgress
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - postgresql
+      - postgresql-contrib 
+
+
+  - name: "Install Python packages"
+    pip: "name={{ item }}  state=present"
+    with_items:
+      - psycopg2-binary
+
+
+  - name: "Start and enable services"
+    service: "name={{ item }} state=started enabled=yes"
+    with_items:
+      - postgresql

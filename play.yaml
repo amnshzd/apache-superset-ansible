@@ -1,0 +1,10 @@
+---
+  - hosts: all
+    roles:
+      - postgres
+      - postgresconfig
+      - superset
+      - nginx
+    environment:
+      FLASK_APP: superset
+      PYTHONPATH: /opt/python/superset

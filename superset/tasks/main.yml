@@ -1,0 +1,124 @@
+---
+# tasks file for superset
+
+
+  - name: test Ubuntu target hosts
+    ping:
+    tags:
+      - test
+   
+  - name: update apt cache
+    apt:
+      update_cache: yes
+    tags:
+      - cache update
+
+   
+  - name: install needed package
+    apt:
+      name: "{{ item }}"
+      state: present
+    loop:
+      - "{{ packages_to_install }}"    
+
+
+  - file: 
+      path: "/opt/python/superset"
+      state: directory
+      recurse: yes
+
+  - file: 
+      path: "/opt/app/superset"
+      state: directory
+      recurse: yes
+
+
+  - name: copy config file
+    copy:
+      src: superset_config.py
+      dest: /opt/python/superset/superset_config.py
+
+  - name: copy systemd
+    copy:
+      src: superset.service
+      dest: /lib/systemd/system/superset.service
+
+  - name: Copy file with owner and permissions
+    copy:
+      src: superset.sh
+      dest: /bin/superset.sh
+      mode: '0777'
+
+
+  - name: Install Superset dependent pip libraries
+    pip:
+      name: pip
+      state: latest 
+      virtualenv: /opt/app/superset
+      virtualenv_command: 'python3 -m venv'
+    become: yes
+    become_user: root
+
+  - name: Install Superset dependent pip libraries
+    pip:
+      name: setuptools
+      state: latest 
+      virtualenv: /opt/app/superset
+      virtualenv_command: 'python3 -m venv'
+    become: yes
+    become_user: root
+
+  - name: Install Superset dependent pip libraries
+    pip:
+      name: wheel
+      state: latest
+      virtualenv: /opt/app/superset
+      virtualenv_command: 'python3 -m venv'
+    become: yes
+    become_user: root     
+
+  - name: Install Superset dependent pip libraries
+    pip:
+      name: psycopg2
+      state: present
+      virtualenv: /opt/app/superset
+      virtualenv_command: 'python3 -m venv'
+    become: yes
+    become_user: root
+
+  - name: Install Superset
+    pip:
+      name: apache-superset
+      state: latest
+      virtualenv: /opt/app/superset
+      virtualenv_command: 'python3 -m venv'
+
+ 
+  - name: Superset DB Upgrade
+    shell: "/opt/app/superset/bin/superset db upgrade"
+
+  - name: Add New User For Supperset
+    shell: source /opt/app/superset/bin/activate && flask fab create-user --role Admin --username xadmin --firstname xadmin --lastname xadmin --email xadmin@gmail.com --password cool-password
+    args:
+      executable: /bin/bash
+
+  - name: Superset Init
+    shell: "/opt/app/superset/bin/superset init"
+
+  - name: Superset Init
+    shell: "systemctl daemon-reload"
+    become: yes 
+    become_user: root
+
+
+  - name: Superset Init
+    shell: "systemctl enable superset"
+    become: yes 
+    become_user: root
+
+  - name: Superset Init
+    shell: "systemctl start superset"
+    become: yes
+    become_user: root
+
+

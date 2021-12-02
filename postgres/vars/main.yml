@@ -1,0 +1,10 @@
+---
+# vars file for superset
+
+  packages_to_install:
+    - build-essential
+    - ca-certificates
+    - gnupg2
+    - curl
+    - software-properties-common
+    - acl

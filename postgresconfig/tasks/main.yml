@@ -1,0 +1,39 @@
+---
+# tasks file for postgresconfig
+
+  - name: "Create app database"
+    postgresql_db:
+      state: present
+      name: "test"
+    become: yes
+    become_user: postgres
+
+  - name: "Create db user"
+    postgresql_user:
+      state: present
+      name: "admin"
+      password: "admin"
+    become: yes
+    become_user: postgres
+
+  - name: "Grant db user access to app db"
+    postgresql_privs:
+      type: database
+      database: "test"
+      roles: "admin"
+      grant_option: no
+      privs: all
+    become: yes
+    become_user: postgres
+
+  - name: "Allow md5 connection for the db user"
+    postgresql_pg_hba:
+      dest: "~/14/main/pg_hba.conf"
+      contype: host
+      databases: all
+      method: md5
+      users: "admin"
+      create: true
+    become: yes
+    become_user: postgres
+    notify: restart postgres
